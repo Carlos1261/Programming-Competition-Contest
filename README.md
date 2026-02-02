@@ -4,16 +4,16 @@ Welcome to my personal repository of competitive programming problems. Here I up
 
 ## 📂 Problems List
 
-### 1. 🇨🇺 Habana Almendron Routes
+### 1. 🇨🇺 Habana Almendrón Routes
 **Topic:** Graphs, Beam Search, Bitmasks.
 **Type:** Optimization / Heuristic Search.
 
-> A problem about finding the best route for a vintage taxi in Havana, managing fuel, traffic, and passenger patience constraints.
+> A problem about finding the best route for a vintage taxi in Habana, managing fuel, traffic, and passenger patience constraints.
 
-- 📄 [Problem Statement (PDF)](./Habana-Almendron/problem.pdf)
-- 💻 [Solution (C++)](./Habana-Almendron/solution.cpp)
-- 🛠️ [Generator](./Habana-Almendron/generator.cpp)
-- ⚖️ [Checker](./Habana-Almendron/checker.cpp)
+- 📄 [Problem Statement (PDF)](./PC01-Habana-Almendron/Habana.pdf)
+- 💻 [Solution (C++)](./PC01-Habana-Almendron/solution.cpp)
+- 🛠️ [Generator](./PC01-Habana-Almendron/generator.cpp)
+- ⚖️ [Checker](./PC01-Habana-Almendron/checker.cpp)
 
 ---
 
@@ -25,4 +25,4 @@ Welcome to my personal repository of competitive programming problems. Here I up
 ## 🚀 Status
 | Problem | Tests | Verdict |
 | :--- | :---: | :---: |
-| Habana Almendron | 27/27 | ✅ Ready |
+| Habana Almendrón | 27/27 | ✅ Ready |
