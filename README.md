@@ -1,28 +1,22 @@
-# Programming Competition Contests
+# 🇨🇺 Habana Almendron Routes
+**High-Level Competitive Programming Problem (ICPC Standard)**
 
-Welcome to my personal repository of competitive programming problems. Here I upload the problems I create using **Polygon** and **Testlib** to practice problem setting and algorithm design.
+## Overview
+An optimization challenge inspired by the shared taxi system in Havana, Cuba. Technically, it is a variation of the **Pickup and Delivery Problem (PDP)** with time windows and capacity constraints.
 
-## Problems List
+## Technical Specifications
+- **Topic:** Graphs, Heuristic Search, Bitmasks.
+- **Complexity:** NP-Hard.
+- **Algorithms:** Dijkstra (Preprocessing) + Beam Search with Pareto Frontier.
+- **Tools:** Polygon, Testlib.h, C++17.
 
-### 1. 🇨🇺 Habana Almendrón Routes
-**Topic:** Graphs, Beam Search, Bitmasks.
-**Type:** Optimization / Heuristic Search.
+## Mechanics
+- **Grid Navigation:** Different costs for Traffic (T), Checkpoints (C), and Streets (.).
+- **Dynamic Constraints:** Passenger patience windows and vehicle capacity (CAP).
+- **Optimization Goal:** Maximize total revenue and return to the starting point.
 
-> A problem about finding the best route for a vintage taxi in Habana, managing fuel, traffic, and passenger patience constraints.
-
-- [Problem Statement (PDF)](./PC01-Habana-Almendron/Habana.pdf)
-- [Solution (C++)](./PC01-Habana-Almendron/solution.cpp)
-- [Generator](./PC01-Habana-Almendron/generator.cpp)
-- [Checker](./PC01-Habana-Almendron/checker.cpp)
-
----
-
-## Tools Used
-- **Polygon** for package management.
-- **Testlib.h** for generating tests and validation.
-- **C++17** for the main solution.
-
-## Status
-| Problem | Tests | Verdict |
-| :--- | :---: | :---: |
-| Habana Almendrón | 27/27 | ✅ Ready |
+## Status & Coverage
+- **Statement:** LaTeX Professional PDF.
+- **Tests:** 39/39 Cases (including Extreme Difficulty & Stress tests).
+- **Solution:** Optimized C++ (State Pooling, Hybrid Efficiency Scoring).
+- **Checker:** Robust testlib-based validation.

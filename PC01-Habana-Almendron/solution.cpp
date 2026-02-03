@@ -10,7 +10,7 @@
  * - State Pool: Stores approximately K * W active states.
  * - Path Cache: Stores reconstruction paths between POIs.
  * * Variables:
- * P = POIs (~2N), W = Beam Width (~3000), K = Path Length, N = Passengers.
+ * P = POIs (~2N), W = Beam Width (~2500), K = Path Length, N = Passengers.
  */
 
 #include <iostream>
@@ -26,7 +26,7 @@ using namespace std;
 
 // Configuration Constants
 const int INF = 1e9;
-const double TIME_LIMIT = 0.95; 
+const double TIME_LIMIT = 1.85; 
 
 // Beam Search Parameters
 // Adaptive width strategy: Start wide to find complex paths, narrow down to save memory.

@@ -1,20 +1,28 @@
 EDITORIAL: HABANA ALMENDRON ROUTES
 
 1. PROBLEM ANALYSIS
-The problem is a variation of the Pickup and Delivery Problem (PDP), a well-known NP-hard optimization challenge. With up to N=12 passengers, each having three possible states (waiting, in taxi, or delivered), there are 3^12 combinations of passenger status. Combined with a 100x100 grid, the state-space is too large for standard BFS or Dijkstra (over 17 million states).
+This is an NP-Hard optimization problem. With N=12, the state space is roughly 3^12 * (R*C), which is ~17 million states. A simple BFS or Dijkstra is too slow for the 2.0s limit.
 
-2. PREPROCESSING
-To optimize performance, we ignore most of the grid during the main search. We pre-calculate a distance matrix between all Points of Interest (POIs): the starting point, the 9 pickup zones, and all unique dropoff locations. We run a Dijkstra from each POI to find the minimum time cost to reach any other POI, accounting for the penalty of Traffic ('T') and Checkpoint ('C') cells.
+2. SUBTASK HINTS
+- Subtask 1 (N <= 8, No Patience): Use standard DP with bitmask. The state is (mask_picked, mask_delivered, pos). Since time isn't an issue, focus on the cheapest path for the highest pay.
+- Subtask 2 (CAP = 1): This simplifies the problem to a sequence of individual trips. You can solve it as a Traveling Salesperson Problem (TSP) variation where each "node" is a pair (Pickup -> Dropoff).
+- Subtask 3 (Full Constraints): Requires a heuristic approach. Beam Search is ideal here, keeping only the top W most promising states at each step.
 
-3. ALGORITHM: BEAM SEARCH + PARETO FRONTIER
-Since we cannot explore every possible sequence, we implement a Beam Search:
-- State Representation: (current_location, mask_picked, mask_delivered, current_time, current_money).
-- Pareto Dominance: A state is considered "useless" if there is another state with the same passengers picked/delivered at the same location that has more money and less time. We maintain a "Pareto Frontier" to prune these dominated states.
-- Beam Width: We limit the number of active states to a fixed width (around 3000-5000) to keep the complexity under control.
+3. THE "WALKTHROUGH" (Sample #1 Example)
+- Taxi starts at (0,0).
+- POIs: Pickup '1' at (1,2), Dropoff 'A' at (4,2).
+- Route:
+  1. (0,0) -> (1,2): 3 moves. T=3. Passenger '1' has patience 20. 3 <= 20? YES. Pickup successful.
+  2. (1,2) -> (4,2): 3 moves. T=6. Dropoff 'A' at (4,2). Money += 100.
+  3. (4,2) -> (0,0): 6 moves. T=12. Return to start.
+- Final Result: 100 pesos, 12 moves (including return).
 
-4. HEURISTICS AND PRUNING
-We use a greedy estimate of the remaining potential profit to stop exploring paths that clearly won't beat our current best result. We also enforce a strict internal time limit (0.95s) to ensure the solution finishes well within the official 2.0s limit, regardless of the test case complexity.
+4. ADVANCED OPTIMIZATIONS
+- Pareto Frontier: If two states have the same passengers at the same location, the one with MORE money and LESS time always wins. Prune the other.
+- State Pooling: Pre-allocate memory for states to avoid slow 'new' or 'push_back' operations during the search.
+- Preprocessing: Running Dijkstra from each POI to every other POI allows us to "jump" between important nodes in O(1) during the Beam Search.
 
 COMPLEXITY:
-- Preprocessing: O(POIs * (R * C) * log(R * C))
-- Main Search: O(BeamWidth * N^2)
+- Preprocessing: O(P * RC log RC) where P is the number of POIs.
+- Main Search: O(BeamWidth * N^2).
+
