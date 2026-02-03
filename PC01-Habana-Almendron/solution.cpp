@@ -10,9 +10,9 @@
  * - State Pool: Stores approximately K * W active states.
  * - Path Cache: Stores reconstruction paths between POIs.
  * * Variables:
- * P = POIs (~2N), W = Beam Width (~2500), K = Path Length, N = Passengers.
+ * P = POIs (~2N), W = Beam Width (~3000), K = Path Length, N = Passengers.
  */
-
+#include <cmath>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -26,12 +26,12 @@ using namespace std;
 
 // Configuration Constants
 const int INF = 1e9;
-const double TIME_LIMIT = 1.85; 
+const double TIME_LIMIT = 1.5; 
 
 // Beam Search Parameters
 // Adaptive width strategy: Start wide to find complex paths, narrow down to save memory.
-const int BEAM_WIDTH_INITIAL = 2500; 
-const int BEAM_WIDTH_MIN = 800;      
+const int BEAM_WIDTH_INITIAL = 6000; 
+const int BEAM_WIDTH_MIN = 2000;      
 
 // Data Structures
 
@@ -56,11 +56,13 @@ struct StateRef {
     int idx;     // Index in the memory pool
     int f_score; // Ranking criteria (Money + Potential Heuristic)
     int time;    // Tie-breaker: Time elapsed
+    double priority; 
 
     // Descending sort operator (Highest score is best)
+    // This is now O(1) - instant comparison!
     bool operator>(const StateRef& other) const {
-        if (f_score != other.f_score) return f_score > other.f_score; 
-        return time < other.time; 
+        if (abs(priority - other.priority) > 1e-9) return priority > other.priority;
+        return f_score > other.f_score;
     }
 };
 
@@ -264,18 +266,22 @@ int estimate_potential(int u_idx, int t, int p, int d) {
     // K = CAP * 1.5 (approx 6 passengers) covers immediate future + next batch.
     sort(candidates.begin(), candidates.end(), greater<int>());
 
-    int limit = min((int)candidates.size(), 6); // Lookahead horizon
+    int limit = min((int)candidates.size(), 12); // Lookahead horizon
     for(int k = 0; k < limit; ++k) {
         pot += candidates[k];
     }
 
     return pot;
 }
+double time_factor[3005];
 
 int main() {
     ios_base::sync_with_stdio(false); cin.tie(NULL);
     start_time = clock();
-
+    for (int i = 0; i <= 3000; i++) {
+        time_factor[i] = pow(i + 1.0, 0.8);
+    }
+    
     // Input Reading
     if (!(cin >> R >> C >> CAP >> T_MAX)) return 0;
     cin >> start_pos.r >> start_pos.c;
@@ -326,7 +332,7 @@ int main() {
 
     // Initialize Memory Pool
     // Reserve sufficient memory to prevent runtime reallocation overhead
-    state_pool.reserve(3500000); 
+    state_pool.reserve(4500000); // Updated to 4.5M for deeper beam search
     
     StateData root;
     root.u = 0; root.picked = 0; root.dropped = 0; root.load = 0; root.time = 0; root.money = 0;
@@ -353,8 +359,8 @@ int main() {
     while (!beam.empty()) {
         if ((double)(clock() - start_time) / CLOCKS_PER_SEC > TIME_LIMIT) break;
         
-        // Emergency memory safety check
-        if (state_pool.size() > 3400000) break;
+        // Emergency memory safety check (Updated for new pool size)
+        if (state_pool.size() > 4400000) break;
 
         vector<StateData> candidates;
         vector<StateRef> next_gen_refs; 
@@ -412,8 +418,10 @@ int main() {
                 // Add valid state to candidate list
                 if (next.time <= T_MAX) {
                     next.potential = estimate_potential(v, next.time, next.picked, next.dropped);
+                    int total_money = next.money + next.potential;
+                    double p = (double)total_money / time_factor[next.time]; 
                     candidates.push_back(next);
-                    next_gen_refs.push_back({(int)candidates.size() - 1, next.money + next.potential, next.time});
+                    next_gen_refs.push_back({(int)candidates.size() - 1, total_money, next.time, p});
                 }
             }
         }
@@ -422,23 +430,24 @@ int main() {
         
         // Adjust beam width based on elapsed time to optimize final search depth
         double elapsed = (double)(clock() - start_time) / CLOCKS_PER_SEC;
-        int width = (elapsed > 0.6) ? BEAM_WIDTH_MIN : BEAM_WIDTH_INITIAL;
+        int width = (elapsed > 1.5) ? BEAM_WIDTH_MIN : BEAM_WIDTH_INITIAL;
         
         if (next_gen_refs.empty()) break;
 
-        // Selection Phase: Keep only the Top K candidates
+        // --- Selection Phase: Keep only the Top K candidates using Precalculated Scores ---
         if ((int)next_gen_refs.size() > width) {
-            // Linear time selection (O(N))
-            nth_element(next_gen_refs.begin(), next_gen_refs.begin() + width, next_gen_refs.end(), 
-                        [](const StateRef& a, const StateRef& b) {
-                            return a > b; 
-                        });
-            next_gen_refs.resize(width);
             
-            // Sort selected candidates to process most promising branches first
-            sort(next_gen_refs.begin(), next_gen_refs.end(), [](const StateRef& a, const StateRef& b) {
-                return a > b;
-            });
+            // This moves the best 'width' elements to the front using O(1) comparison
+            nth_element(next_gen_refs.begin(), 
+                        next_gen_refs.begin() + width, 
+                        next_gen_refs.end(), 
+                        greater<StateRef>());
+
+            // Prune the beam: discard states outside the top 'width'
+            next_gen_refs.resize(width);
+
+            // Final sort for the current beam generation (FAST)
+            sort(next_gen_refs.begin(), next_gen_refs.end(), greater<StateRef>());
         }
 
         // Commit survivors to the persistent memory pool

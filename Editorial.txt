@@ -48,3 +48,76 @@ B. Simulated Annealing (SA)
 7. EDGE CASES HANDLED
 - "The Round Trip": The solution explicitly checks paths returning to (START_R, START_C) at every step.
 - "The Lazy Taxi": We force the Beam Width to remain high (6000) for at least 1.5s to prevent early convergence on suboptimal short routes (Test Case #7).
+
+
+ALGORITHM: HYBRID BEAM SEARCH (Habana Almendron)
+
+1. PRECOMPUTATION PHASE (Graph Compression)
+   Input: Grid RxC, N Passengers.
+   Identify POIs (Points of Interest): Start + Pickup locs + Dropoff locs.
+   
+   // Pre-calculate Power Table for O(1) scoring
+   For t in 0 to 3000:
+       TimeFactor[t] = Pow(t + 1, 0.8)
+
+   // Convert Grid to Adjacency Matrix
+   For each POI u:
+       Run BFS on Grid to find shortest paths to all other POIs v.
+       Store DistMatrix[u][v] and PathReconstruction[u][v].
+       (This avoids running BFS during the main search).
+
+2. SEARCH INITIALIZATION
+   RootState = { 
+       Location: Start, 
+       Time: 0, 
+       Money: 0, 
+       Load: 0, 
+       Masks: 0 
+   }
+   Beam = { RootState }
+   BestMoney = 0
+
+3. MAIN LOOP (Beam Search)
+   While Beam is not empty AND RealTime < 1.9s:
+       Candidates = []
+       
+       For each State S in Beam:
+           // A. Try Closing the Loop (Return to Start)
+           If S.Location != Start:
+               Calculate trip home.
+               If valid within T_MAX:
+                   Update BestMoney.
+
+           // B. Expand to Neighbors (Transitions)
+           For each POI v in Graph:
+               If v == S.Location OR time to reach v exceeds T_MAX: 
+                   Continue
+               
+               NewState = Copy(S)
+               Travel to v: NewState.Time += DistMatrix[S][v]
+               
+               // Simulation Logic
+               1. Drop off passengers destined for v.
+               2. Pick up passengers at v (Greedy by Pay, check Cap & Patience).
+               
+               // --- THE SECRET SAUCE (Heuristic Scoring) ---
+               Potential = EstimateFutureEarnings(NewState)
+               TotalValue = NewState.Money + Potential
+               
+               // Hybrid Efficiency Score: Money per (Time^0.8)
+               Priority = TotalValue / TimeFactor[NewState.Time]
+               
+               Add {NewState, Priority} to Candidates
+
+       // C. Pruning (Selection Phase)
+       // Keep width high (6000) for 1.5s to explore deep paths, then narrow to 2000
+       CurrentWidth = (Elapsed > 1.5s) ? 2000 : 6000
+       
+       If Candidates.size > CurrentWidth:
+           Select top CurrentWidth states using Nth_Element (O(N)) based on Priority.
+       
+       Beam = Selected Candidates (Sorted)
+
+4. OUTPUT
+   Reconstruct path from BestMoney state using Parent Pointers.
+   Print TotalMoney and Step-by-Step Coordinates.
