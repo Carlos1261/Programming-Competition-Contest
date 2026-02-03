@@ -1,0 +1,20 @@
+EDITORIAL: HABANA ALMENDRON ROUTES
+
+1. PROBLEM ANALYSIS
+The problem is a variation of the Pickup and Delivery Problem (PDP), a well-known NP-hard optimization challenge. With up to N=12 passengers, each having three possible states (waiting, in taxi, or delivered), there are 3^12 combinations of passenger status. Combined with a 100x100 grid, the state-space is too large for standard BFS or Dijkstra (over 17 million states).
+
+2. PREPROCESSING
+To optimize performance, we ignore most of the grid during the main search. We pre-calculate a distance matrix between all Points of Interest (POIs): the starting point, the 9 pickup zones, and all unique dropoff locations. We run a Dijkstra from each POI to find the minimum time cost to reach any other POI, accounting for the penalty of Traffic ('T') and Checkpoint ('C') cells.
+
+3. ALGORITHM: BEAM SEARCH + PARETO FRONTIER
+Since we cannot explore every possible sequence, we implement a Beam Search:
+- State Representation: (current_location, mask_picked, mask_delivered, current_time, current_money).
+- Pareto Dominance: A state is considered "useless" if there is another state with the same passengers picked/delivered at the same location that has more money and less time. We maintain a "Pareto Frontier" to prune these dominated states.
+- Beam Width: We limit the number of active states to a fixed width (around 3000-5000) to keep the complexity under control.
+
+4. HEURISTICS AND PRUNING
+We use a greedy estimate of the remaining potential profit to stop exploring paths that clearly won't beat our current best result. We also enforce a strict internal time limit (0.95s) to ensure the solution finishes well within the official 2.0s limit, regardless of the test case complexity.
+
+COMPLEXITY:
+- Preprocessing: O(POIs * (R * C) * log(R * C))
+- Main Search: O(BeamWidth * N^2)

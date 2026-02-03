@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
     
     cout << N << endl;
     for (int i = 0; i < N; i++) {
-        int pay = (rnd.next(10, 100)) * 10; 
+        int pay = (rnd.next(4, 200)) * 5; 
         int dist_p = abs(p_locs_actual[i].first - start.first) + abs(p_locs_actual[i].second - start.second);
         int min_patience = dist_p * 2 + 10; 
         int max_patience = max(min_patience + 20, (int)(T_MAX * 0.8));
