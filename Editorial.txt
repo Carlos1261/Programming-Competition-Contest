@@ -25,4 +25,26 @@ This is an NP-Hard optimization problem. With N=12, the state space is roughly 3
 COMPLEXITY:
 - Preprocessing: O(P * RC log RC) where P is the number of POIs.
 - Main Search: O(BeamWidth * N^2).
+5. THE WINNING HEURISTIC (The "Secret Sauce")
+Standard Beam Search often fails because it greedily picks the most money *now*, ignoring that a slightly longer trip might yield much more money *later*.
+Our solution uses a Hybrid Efficiency Score to rank states:
+   
+   Score = Total_Money / (Time_Elapsed ^ 0.8)
 
+- Why ^0.8? A linear division (Time ^ 1.0) is too aggressive against long trips. 
+- Using 0.8 allows the taxi to take longer, high-reward routes (like in Test Case #11) without being pruned early.
+- We pre-calculate this power table to ensure O(1) scoring during the search.
+
+6. ALTERNATIVE APPROACHES (Why they fail)
+A. Dynamic Programming (DP)
+   - State: dp[mask_picked][mask_dropped][pos][time]
+   - Complexity: O(4^N * POIs * TMAX). 
+   - Verdict: Feasible for Subtask 1 (N=8), but Memory Limit Exceeded for N=12.
+
+B. Simulated Annealing (SA)
+   - Strategy: Randomly swap passengers in a route.
+   - Verdict: The grid contains walls ('#'). Random changes often create invalid paths or get stuck in local optima. It is too unstable for the strict 2.0s limit.
+
+7. EDGE CASES HANDLED
+- "The Round Trip": The solution explicitly checks paths returning to (START_R, START_C) at every step.
+- "The Lazy Taxi": We force the Beam Width to remain high (6000) for at least 1.5s to prevent early convergence on suboptimal short routes (Test Case #7).

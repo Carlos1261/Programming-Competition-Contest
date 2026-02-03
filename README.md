@@ -7,7 +7,7 @@ An optimization challenge inspired by the shared taxi system in Havana, Cuba. Te
 ## Technical Specifications
 - **Topic:** Graphs, Heuristic Search, Bitmasks.
 - **Complexity:** NP-Hard.
-- **Algorithms:** Dijkstra (Preprocessing) + Beam Search with Pareto Frontier.
+- **Algorithms:** Dijkstra (Preprocessing) + Beam Search with Hybrid Heuristic Scoring.
 - **Tools:** Polygon, Testlib.h, C++17.
 
 ## Mechanics
