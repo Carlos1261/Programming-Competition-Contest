@@ -26,7 +26,7 @@ using namespace std;
 
 // Configuration Constants
 const int INF = 1e9;
-const double TIME_LIMIT = 1.5; 
+const double TIME_LIMIT = 1.9; 
 
 // Beam Search Parameters
 // Adaptive width strategy: Start wide to find complex paths, narrow down to save memory.
@@ -332,7 +332,7 @@ int main() {
 
     // Initialize Memory Pool
     // Reserve sufficient memory to prevent runtime reallocation overhead
-    state_pool.reserve(4500000); // Updated to 4.5M for deeper beam search
+    state_pool.reserve(6000000); // Updated to 4.5M for deeper beam search
     
     StateData root;
     root.u = 0; root.picked = 0; root.dropped = 0; root.load = 0; root.time = 0; root.money = 0;
@@ -360,7 +360,7 @@ int main() {
         if ((double)(clock() - start_time) / CLOCKS_PER_SEC > TIME_LIMIT) break;
         
         // Emergency memory safety check (Updated for new pool size)
-        if (state_pool.size() > 4400000) break;
+        if (state_pool.size() > 5800000) break;
 
         vector<StateData> candidates;
         vector<StateRef> next_gen_refs; 
